@@ -83,6 +83,8 @@ def main(num_steps, input_file, output_file):
 
     write_data(positions, output_file)
 
+    print(f"Simulated {num_steps} steps. Results written to {output_file}.")
+
 
 if __name__ == "__main__":
     main()
