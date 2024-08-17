@@ -66,14 +66,23 @@ def calculate_forces(positions, masses):
 @click.option(
     "--output-file", type=str, required=True, help="Data is written to this file."
 )
-def main(num_steps, input_file, output_file):
+@click.option(
+    "--trajectories-file", type=str, help="File to store trajectories into (optional)."
+)
+def main(num_steps, input_file, output_file, trajectories_file):
     """Program that simulates the motion of planets."""
 
     positions, velocities, masses = read_data(input_file)
 
     dt = 0.1  # time step
 
+    if trajectories_file:
+        trajectories = np.zeros((num_steps, len(positions), 3))
+
     for step in range(num_steps):
+        if trajectories_file:
+            trajectories[step] = positions
+
         forces = calculate_forces(positions, masses)
 
         # update velocities and positions
@@ -82,6 +91,9 @@ def main(num_steps, input_file, output_file):
         positions += velocities * dt
 
     write_data(positions, output_file)
+
+    if trajectories_file:
+        np.savez_compressed(trajectories_file, trajectories)
 
     print(f"Simulated {num_steps} steps. Results written to {output_file}.")
 
