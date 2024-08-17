@@ -1,0 +1,27 @@
+Bootstrap: docker
+From: ubuntu:24.04
+
+
+%files
+    *.py /software/
+    environment.yml /software/
+
+
+%post
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get update -y
+
+    # install apps/tools which we will need
+    apt-get install -y curl bzip2
+
+    # install latest micromamba
+    MAMBA_PATH=/software/mamba
+    mkdir -p ${MAMBA_PATH}
+    cd ${MAMBA_PATH}
+    curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
+    export MAMBA_ROOT_PREFIX=${MAMBA_PATH}/mamba-prefix
+    eval "$(${MAMBA_PATH}/bin/micromamba shell hook -s posix)"
+
+    # install the conda environment from environment.yml
+    export TMPDIR=${MAMBA_PATH}
+    micromamba -y env create --prefix ${MAMBA_PATH}/environment/ --file /software/environment.yml
