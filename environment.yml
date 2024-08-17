@@ -1,3 +1,4 @@
+name: planets
 channels:
   - conda-forge
 dependencies:
