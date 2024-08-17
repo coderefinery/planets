@@ -21,8 +21,8 @@ def read_data(input_file):
 
 # write the data with 2 decimal places only
 def write_data(positions, output_file):
-    with open(output_file, "w") as f:
-        writer = csv.writer(f)
+    with open(output_file, "w", newline="") as f:
+        writer = csv.writer(f, lineterminator="\n")
         writer.writerow(["px", "py", "pz"])
         for px, py, pz in positions:
             writer.writerow([f"{px:.2f}", f"{py:.2f}", f"{pz:.2f}"])
