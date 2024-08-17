@@ -56,3 +56,8 @@ From: ubuntu:24.04
                                  --input-file ${output_path}/initial.csv \
                                  --num-cores ${num_cores} \
                                  --output-file ${output_path}/final.csv
+
+
+%help
+    example:
+    $ ./container.sif 1000 20 8 /some/output/path
