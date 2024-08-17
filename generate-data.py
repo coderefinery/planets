@@ -5,7 +5,7 @@ import numpy as np
 
 # write the data with 2 decimal places only
 def write_data(positions, velocities, masses, output_file):
-    with open(output_file, "w") as f:
+    with open(output_file, "w", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(["px", "py", "pz", "vx", "vy", "vz", "mass"])
         for i in range(len(positions)):
