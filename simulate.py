@@ -1,6 +1,7 @@
 import numpy as np
 import click
 import csv
+import multiprocessing
 
 
 def read_data(input_file):
@@ -58,6 +59,35 @@ def calculate_forces(positions, masses):
     return calculate_forces_range(args)
 
 
+def calculate_forces_parallel(positions, masses, num_cores):
+    num_planets = len(positions)
+    chunk_size = num_planets // num_cores
+
+    pool = multiprocessing.Pool(processes=num_cores)
+
+    # create arguments for each process
+    args = [
+        (
+            i * chunk_size,
+            (i + 1) * chunk_size if i != num_cores - 1 else num_planets,
+            positions,
+            masses,
+        )
+        for i in range(num_cores)
+    ]
+
+    # calculate forces in parallel
+    results = pool.map(calculate_forces_range, args)
+
+    # combine results
+    forces = np.sum(results, axis=0)
+
+    pool.close()
+    pool.join()
+
+    return forces
+
+
 @click.command()
 @click.option("--num-steps", type=int, required=True, help="Number of steps.")
 @click.option(
@@ -69,7 +99,8 @@ def calculate_forces(positions, masses):
 @click.option(
     "--trajectories-file", type=str, help="File to store trajectories into (optional)."
 )
-def main(num_steps, input_file, output_file, trajectories_file):
+@click.option("--num-cores", type=int, default=1, help="Number of cores.")
+def main(num_steps, input_file, output_file, trajectories_file, num_cores):
     """Program that simulates the motion of planets."""
 
     positions, velocities, masses = read_data(input_file)
@@ -83,7 +114,10 @@ def main(num_steps, input_file, output_file, trajectories_file):
         if trajectories_file:
             trajectories[step] = positions
 
-        forces = calculate_forces(positions, masses)
+        if num_cores > 1:
+            forces = calculate_forces_parallel(positions, masses, num_cores)
+        else:
+            forces = calculate_forces(positions, masses)
 
         # update velocities and positions
         accelerations = forces / masses[:, np.newaxis]
@@ -95,7 +129,9 @@ def main(num_steps, input_file, output_file, trajectories_file):
     if trajectories_file:
         np.savez_compressed(trajectories_file, trajectories)
 
-    print(f"Simulated {num_steps} steps. Results written to {output_file}.")
+    print(
+        f"Simulated {num_steps} steps on {num_cores} core(s). Results written to {output_file}."
+    )
 
 
 if __name__ == "__main__":
