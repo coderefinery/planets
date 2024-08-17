@@ -1,0 +1,63 @@
+Bootstrap: docker
+From: ubuntu:24.04
+
+
+%files
+    *.py /software/
+    environment.yml /software/
+
+
+%post
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get update -y
+
+    # install apps/tools which we will need
+    apt-get install -y curl bzip2
+
+    # install latest micromamba
+    MAMBA_PATH=/software/mamba
+    mkdir -p ${MAMBA_PATH}
+    cd ${MAMBA_PATH}
+    curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
+    export MAMBA_ROOT_PREFIX=${MAMBA_PATH}/mamba-prefix
+    eval "$(${MAMBA_PATH}/bin/micromamba shell hook -s posix)"
+
+    # install the conda environment from environment.yml
+    export TMPDIR=${MAMBA_PATH}
+    micromamba -y env create --prefix ${MAMBA_PATH}/environment/ --file /software/environment.yml
+
+
+%runscript
+    if [ $# -ne 4 ]; then
+        echo "This script expects four arguments."
+        echo "Usage: ./container.sif NUM_PLANETS NUM_STEPS NUM_CORES OUTPUT_PATH"
+        exit 1
+    fi
+
+    num_planets=$1
+    num_steps=$2
+    num_cores=$3
+    output_path=$4
+
+    # activate the conda environment
+    MAMBA_PATH=/software/mamba
+    eval "$(${MAMBA_PATH}/bin/micromamba shell hook -s posix)"
+    micromamba activate ${MAMBA_PATH}/environment/
+
+    # create output directory
+    mkdir -p ${output_path}
+
+    # generate start positions
+    python /software/generate-data.py --num-planets ${num_planets} \
+                                      --output-file ${output_path}/initial.csv
+
+    # run the simulation
+    python /software/simulate.py --num-steps ${num_steps} \
+                                 --input-file ${output_path}/initial.csv \
+                                 --num-cores ${num_cores} \
+                                 --output-file ${output_path}/final.csv
+
+
+%help
+    example:
+    $ ./container.sif 1000 20 8 /some/output/path
