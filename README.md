@@ -20,14 +20,16 @@ This is part of https://coderefinery.github.io/research-software-engineering/.
 
 ## Example
 
-Generate 10 planets with random initial positions, velocities, and masses,
-and save them to a file called `results/initial.csv`:
-```bash
-python generate-data.py --num-planets 10 --output-file results/initial.csv
+The code is written to accept **command-line arguments** to specify the number
+of planets and the number of time steps.
+
+We first generate starting data:
+```console
+$ python generate-data.py --num-planets 10 --output-file initial.csv
 ```
 
-The generated file will look like this:
-```csv
+The generated file (initial.csv) could look like this:
+```
 px,py,pz,vx,vy,vz,mass
 -46.88,-42.51,88.33,-0.86,-0.18,0.55,6.70
 -5.29,17.09,-96.13,0.66,0.45,-0.17,3.51
@@ -41,29 +43,30 @@ px,py,pz,vx,vy,vz,mass
 39.09,53.12,-59.54,-0.54,0.56,0.07,8.98
 ```
 
-In the following example, we generate 500 planets and simulate their motion
-for 20 steps using 8 cores in parallel:
-```bash
-python generate-data.py --num-planets 500 --output-file results/initial.csv
-
-python simulate.py --num-steps 20 \
-                   --input-file results/initial.csv \
-                   --output-file results/final.csv \
-                   --num-cores 8
+Then we can simulate their motion (in this case for 20 steps):
+```console
+$ python simulate.py --num-steps 20 \
+                     --input-file initial.csv \
+                     --output-file final.csv
 ```
 
-The next example shows how to simulate and animate the motion of 20 planets:
-```bash
-python generate-data.py --num-planets 20 --output-file results/initial.csv
+The `--output-file` (final.csv) is again a CSV file (comma-separated values)
+and contains the final positions of all planets.
 
-python simulate.py --num-steps 500 \
-                   --input-file results/initial.csv \
-                   --output-file results/final.csv \
-                   --trajectories-file results/trajectories.npz
+It is possible to run on **multiple cores** and to **animate** the result.
+Here is an example with 100 planets:
+```console
+$ python generate-data.py --num-planets 100 --output-file initial.csv
 
-python animate.py --initial-file results/initial.csv \
-                  --trajectories-file results/trajectories.npz \
-                  --output-file results/animation.mp4
+$ python simulate.py --num-steps 50 \
+                     --input-file initial.csv \
+                     --output-file final.csv \
+                     --trajectories-file trajectories.npz \
+                     --num-cores 8
+
+$ python animate.py --initial-file initial.csv \
+                    --trajectories-file trajectories.npz \
+                    --output-file animation.mp4
 ```
 
 
