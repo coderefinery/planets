@@ -10,7 +10,7 @@ This is part of https://coderefinery.github.io/research-software-engineering/.
 
 ## Requirements
 
-(dependencies and their versions or version ranges)
+- Python (tested with Python 3.12)
 
 
 ## Installation instructions
